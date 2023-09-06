@@ -2,7 +2,7 @@ use clap::Parser;
 use clap::ValueEnum;
 use oxigraph::io::GraphFormat;
 
-#[derive(Parser, Debug, ValueEnum, Parser, Debug)]
+#[derive(Parser, Debug, ValueEnum)]
 #[command(author, about = "RDF conversion tool")]
 pub(crate) struct Args {
     #[arg(

@@ -3,7 +3,7 @@ use oxigraph::io::{GraphFormat, GraphParser, GraphSerializer};
 use std::io::BufRead;
 
 // Call the appropriate parser based on the input RDF format.
-fn parse_any_rdf<R: BufRead>(
+pub fn parse_any_rdf<R: BufRead>(
     src: R,
     format: GraphFormat,
 ) -> Result<TripleReader<R>, oxigraph::io::read::ParseError> {
