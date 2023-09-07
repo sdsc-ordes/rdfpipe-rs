@@ -4,7 +4,7 @@ mod utils;
 use crate::cli::Args;
 use clap::Parser;
 use oxigraph::io::GraphFormat;
-use std::io::{self, Stdin, Read, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader};
 use std::fs::File;
 use std::error::Error;
 
@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     let input_buf = get_input_buf(args.input_file.as_deref())?;
 
-    utils::parse_any_rdf(input_buf, GraphFormat::Turtle);
+    let _ = utils::parse_any_rdf(input_buf, GraphFormat::Turtle);
 
     println!("{:?}", args);
     Ok(())

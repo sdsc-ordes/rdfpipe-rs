@@ -1,5 +1,5 @@
 use oxigraph::io::read::TripleReader;
-use oxigraph::io::{GraphFormat, GraphParser, GraphSerializer};
+use oxigraph::io::{GraphFormat, GraphParser};
 use std::io::BufRead;
 
 // Call the appropriate parser based on the input RDF format.
