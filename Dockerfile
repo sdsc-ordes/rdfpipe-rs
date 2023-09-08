@@ -1,19 +1,34 @@
-ARG BASE_IMAGE=ekidd/rust-musl-builder:latest
+FROM docker.io/library/rust:1.72-alpine as builder
 
-# Build environment
-FROM ${BASE_IMAGE} AS builder
+RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconf git libpq-dev
 
-# Add source code under new user
-ADD --chown=rust:rust . ./
+# Set `SYSROOT` to a dummy path (default is /usr) because pkg-config-rs *always*
+# links those located in that path dynamically but we want static linking, c.f.
+# https://github.com/rust-lang/pkg-config-rs/blob/54325785816695df031cef3b26b6a9a203bbc01b/src/lib.rs#L613
+ENV SYSROOT=/dummy
 
-RUN cargo build --release
+# The env var tells pkg-config-rs to statically link libpq.
+ENV LIBPQ_STATIC=1
 
-# Runner image
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-COPY --from=builder \
-    /home/rust/src/target/x86_64-unknown-linux-musl/release/rdfpipe-rs \
-    /usr/local/bin/
+WORKDIR /wd
+COPY . /wd
 
-CMD /usr/local/rdfpipe-rs
+RUN cargo build --bins --release
+
+# Runner environment
+FROM scratch
+ARG version=unknown
+ARG release=unreleased
+LABEL name="rdfpipe-rs" \
+
+      maintainer="cmdoret" \
+      version=${version} \
+      release=${release} \
+      summary="Command line format conversion tool for RDF." \
+      description="Rust rewrite of rdflib's rdfpipe command line converter."
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /wd/target/release/rdfpipe-rs /
+
+CMD ["./rdfpipe-rs"]
 
