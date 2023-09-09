@@ -5,6 +5,7 @@ use crate::cli::Args;
 use clap::Parser;
 use oxigraph::io::read::ParseError;
 use oxigraph::io::GraphFormat;
+use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
