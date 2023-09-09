@@ -13,13 +13,13 @@ pub(crate) enum ArgGraphFormat {
 
 // Helper mappings to convert from helper CLI enum
 // to corresponding values in oxigraph's enum
-impl From<ArgGraphFormat> for GraphFormat {
-    fn from(other: ArgGraphFormat) -> GraphFormat {
-         match other {
-             ArgGraphFormat::Turtle => GraphFormat::Turtle,
-             ArgGraphFormat::NTriples => GraphFormat::NTriples,
-             ArgGraphFormat::RdfXml => GraphFormat::RdfXml,
-         }
+impl From<&ArgGraphFormat> for GraphFormat {
+    fn from(other: &ArgGraphFormat) -> GraphFormat {
+        match other {
+            ArgGraphFormat::Turtle => GraphFormat::Turtle,
+            ArgGraphFormat::NTriples => GraphFormat::NTriples,
+            ArgGraphFormat::RdfXml => GraphFormat::RdfXml,
+        }
     }
 }
 
