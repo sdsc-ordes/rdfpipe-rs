@@ -3,7 +3,6 @@ mod utils;
 
 use crate::cli::Args;
 use clap::Parser;
-use oxigraph::io::read::ParseError;
 use oxigraph::io::GraphFormat;
 use std::error::Error;
 use std::fs::File;
