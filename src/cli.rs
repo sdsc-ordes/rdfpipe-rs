@@ -1,10 +1,11 @@
+use clap::builder::PossibleValue;
 use clap::Parser;
 use clap::ValueEnum;
 use oxigraph::io::GraphFormat;
 
 // This lets clap automate validation of
 // RDF formats from the command line
-#[derive(ValueEnum, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) enum ArgGraphFormat {
     Turtle,
     NTriples,
@@ -20,6 +21,39 @@ impl From<&ArgGraphFormat> for GraphFormat {
             ArgGraphFormat::NTriples => GraphFormat::NTriples,
             ArgGraphFormat::RdfXml => GraphFormat::RdfXml,
         }
+    }
+}
+
+impl ValueEnum for ArgGraphFormat {
+    fn from_str(input: &str, ignore_case: bool) -> Result<Self, String> {
+        let fmt_str: String;
+        if ignore_case {
+            fmt_str = input.to_lowercase();
+        } else {
+            fmt_str = input.to_string();
+        }
+        match fmt_str.as_str() {
+            "ntriples" | "nt" | "n-triples" => Ok(ArgGraphFormat::NTriples),
+            "xml" | "rdf/xml" | "rdf-xml" => Ok(ArgGraphFormat::RdfXml),
+            "ttl" | "turtle" => Ok(ArgGraphFormat::Turtle),
+            _ => Err(format!("Unknown format: {}", input)),
+        }
+    }
+
+    fn to_possible_value(&self) -> Option<PossibleValue> {
+        match self {
+            ArgGraphFormat::NTriples => Some(PossibleValue::new("ntriples")),
+            ArgGraphFormat::RdfXml => Some(PossibleValue::new("rdf-xml")),
+            ArgGraphFormat::Turtle => Some(PossibleValue::new("turtle")),
+        }
+    }
+
+    fn value_variants<'a>() -> &'a [Self] {
+        &[
+            ArgGraphFormat::Turtle,
+            ArgGraphFormat::NTriples,
+            ArgGraphFormat::RdfXml,
+        ]
     }
 }
 
