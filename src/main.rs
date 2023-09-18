@@ -9,11 +9,8 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
-// Should replicate rdfpipe's command line interface
-// rdfpipe [-i {ttl,nt}] [-o {ttl,nt}] [input]
-// if input is - (default) or missing, read from stdin and infer format from file contents
-// if an input file is specified, infer format from file extension
-
+// Gets a BufReader from a file or standard input. If input_path is None or "-",
+// return a reader from stin, if it points to a path, open from a file.
 fn get_input_buf(input_path: Option<&str>) -> io::Result<Box<dyn BufRead>> {
     match input_path {
         Some("-") | None => {
@@ -39,26 +36,36 @@ fn format_from_path<'a>(path: &'a str) -> Option<GraphFormat> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
+    //
     // If input specified in CLI, use that format
     // Otherwise, infer format from file extension
-    let input_format = match args.input_format {
-        Some(format) => GraphFormat::from(&format),
-        None => args
+    // unless --no-guess was provided
+    let input_format = match (args.input_format, args.no_guess) {
+        (Some(format), _) => GraphFormat::from(&format),
+        (None, true) => Err("Could not infer input format.")?,
+        (None, false) => args
             .input_file
             .as_ref()
             .and_then(|path| format_from_path(path))
             .ok_or_else(|| "Could not infer input format")?,
     };
+    let output_format = GraphFormat::from(&args.output_format.unwrap());
 
     let input_buf = get_input_buf(args.input_file.as_deref())?;
-
-    let output_format = GraphFormat::from(&args.output_format.unwrap());
     let parser = utils::parse_any_rdf(input_buf, input_format)?;
     let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
-    for triple in parser {
-        writer.write(triple?.as_ref())?;
+
+    // Skip output if --no-out enabled
+    if let true  = args.no_out {
+        for triple in parser {
+            _ = triple?.as_ref();
+        }
+    } else {
+        for triple in parser {
+            writer.write(triple?.as_ref())?;
+        }
+        writer.finish()?;
     }
-    writer.finish()?;
 
     Ok(())
 }
