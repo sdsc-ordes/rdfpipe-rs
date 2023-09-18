@@ -47,7 +47,7 @@ pub(crate) struct Args {
     #[arg(long, help="Don't guess format based on file suffix.")]
     pub(crate) no_guess: bool,
     #[arg(long, help="Don't output the resulting graph (useful for checking validity of input).")]
-    pub(crate) no_warn: bool,
+    pub(crate) no_out: bool,
     #[arg(short, long, help = "Input RDF serialization format")]
     pub(crate) input_format: Option<ArgGraphFormat>,
     #[arg(

@@ -9,11 +9,8 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
-// Should replicate rdfpipe's command line interface
-// rdfpipe [-i {ttl,nt}] [-o {ttl,nt}] [input]
-// if input is - (default) or missing, read from stdin and infer format from file contents
-// if an input file is specified, infer format from file extension
-
+// Gets a BufReader from a file or standard input. If input_path is None or "-",
+// return a reader from stin, if it points to a path, open from a file.
 fn get_input_buf(input_path: Option<&str>) -> io::Result<Box<dyn BufRead>> {
     match input_path {
         Some("-") | None => {
@@ -55,10 +52,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let output_format = GraphFormat::from(&args.output_format.unwrap());
     let parser = utils::parse_any_rdf(input_buf, input_format)?;
     let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
-    for triple in parser {
-        writer.write(triple?.as_ref())?;
+
+    // Skip output if --no-out enabled
+    if let true  = args.no_out {
+        for triple in parser {
+            _ = triple?.as_ref();
+        }
+    } else {
+        for triple in parser {
+            writer.write(triple?.as_ref())?;
+        }
+        writer.finish()?;
     }
-    writer.finish()?;
 
     Ok(())
 }
