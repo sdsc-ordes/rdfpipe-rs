@@ -36,20 +36,22 @@ fn format_from_path<'a>(path: &'a str) -> Option<GraphFormat> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
+    //
     // If input specified in CLI, use that format
     // Otherwise, infer format from file extension
-    let input_format = match args.input_format {
-        Some(format) => GraphFormat::from(&format),
-        None => args
+    // unless --no-guess was provided
+    let input_format = match (args.input_format, args.no_guess) {
+        (Some(format), _) => GraphFormat::from(&format),
+        (None, true) => Err("Could not infer input format.")?,
+        (None, false) => args
             .input_file
             .as_ref()
             .and_then(|path| format_from_path(path))
             .ok_or_else(|| "Could not infer input format")?,
     };
+    let output_format = GraphFormat::from(&args.output_format.unwrap());
 
     let input_buf = get_input_buf(args.input_file.as_deref())?;
-
-    let output_format = GraphFormat::from(&args.output_format.unwrap());
     let parser = utils::parse_any_rdf(input_buf, input_format)?;
     let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
 
