@@ -2,8 +2,8 @@ mod cli;
 mod utils;
 
 use crate::cli::Args;
+use crate::utils::GraphFormat;
 use clap::Parser;
-use oxigraph::io::GraphFormat;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
@@ -49,14 +49,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             .and_then(|path| format_from_path(path))
             .ok_or_else(|| "Could not infer input format")?,
     };
-    let output_format = GraphFormat::from(&args.output_format.unwrap());
+    let output_format = args.output_format;
 
     let input_buf = get_input_buf(args.input_file.as_deref())?;
     let parser = utils::parse_any_rdf(input_buf, input_format)?;
     let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
 
     // Skip output if --no-out enabled
-    if let true  = args.no_out {
+    if let true = args.no_out {
         for triple in parser {
             _ = triple?.as_ref();
         }
