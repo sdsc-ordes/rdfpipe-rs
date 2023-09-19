@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Otherwise, infer format from file extension
     // unless --no-guess was provided
     let input_format = match (args.input_format, args.no_guess) {
-        (Some(format), _) => GraphFormat::from(&format),
+        (Some(format), _) => format,
         (None, true) => Err("Could not infer input format.")?,
         (None, false) => args
             .input_file
@@ -52,19 +52,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     let output_format = args.output_format;
 
     let input_buf = get_input_buf(args.input_file.as_deref())?;
-    let parser = utils::parse_any_rdf(input_buf, input_format)?;
-    let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
+    // let parser = utils::parse_any_rdf(input_buf, input_format)?;
+    // let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
 
     // Skip output if --no-out enabled
     if let true = args.no_out {
-        for triple in parser {
-            _ = triple?.as_ref();
-        }
+        /*
+            for triple in parser {
+                _ = triple?.as_ref();
+            }
+        */
     } else {
-        for triple in parser {
-            writer.write(triple?.as_ref())?;
-        }
-        writer.finish()?;
+        /*
+            for triple in parser {
+                writer.write(triple?.as_ref())?;
+            }
+            writer.finish()?;
+        */
     }
 
     Ok(())

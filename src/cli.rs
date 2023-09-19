@@ -22,7 +22,7 @@ pub(crate) struct Args {
         default_value = "turtle",
         help = "Output RDF serialization format"
     )]
-    pub(crate) output_format: Option<GraphFormat>,
+    pub(crate) output_format: GraphFormat,
     #[arg(default_value = "-", help = "Input file. Omit or use - for stdin.")]
     pub(crate) input_file: Option<String>,
 }
