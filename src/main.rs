@@ -1,5 +1,5 @@
 mod cli;
-mod utils;
+mod parser;
 
 use crate::cli::Args;
 use crate::utils::GraphFormat;

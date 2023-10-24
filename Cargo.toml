@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.2", features = ["derive"] }
-sophia = { version = "0.7.2", features = ["xml"] }
+sophia = { version = "0.8.0-alpha.3", features = ["xml"] }
