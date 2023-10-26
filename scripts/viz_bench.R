@@ -5,7 +5,7 @@ library(tidyverse)
 
 timings <- read_csv("timings.csv")
 
-timings <- timings %>%
+bench <- timings %>%
     rename(
         tool = command,
         thousand_lines = parameter_N,
@@ -18,8 +18,17 @@ timings <- timings %>%
     select(tool, mean, fmt, stddev, thousand_lines) %>%
     arrange(thousand_lines, tool)
 
-ggplot(timings, aes(x = thousand_lines, y = log10(mean), color = tool)) +
+ggplot(bench, aes(x = thousand_lines, y = log10(mean), color = tool)) +
     geom_line() +
+    geom_ribbon(
+        aes(
+            y = log10(mean),
+            ymin = log10(mean - stddev),
+            ymax = log10(mean + stddev),
+            fill = "lightgrey"
+        ),
+        alpha = .2
+    ) +
     xlab("Thousands of lines parsed") +
     ylab("Log10 time (seconds)") +
     theme_bw(base_size = 18) +
