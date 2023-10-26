@@ -233,9 +233,7 @@ name = "rdfpipe-rs"
 version = "0.1.0"
 dependencies = [
  "clap",
- "rio_turtle",
  "sophia",
- "sophia_rio",
 ]
 
 [[package]]

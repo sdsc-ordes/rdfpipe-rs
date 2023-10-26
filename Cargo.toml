@@ -7,6 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.2", features = ["derive"] }
-rio_turtle = "0.8.4"
 sophia = { version = "0.8.0-alpha.3", features = ["xml"] }
-sophia_rio = "0.8.0-alpha.3"
