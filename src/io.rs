@@ -1,100 +1,77 @@
-use crate::cli::GraphFormat;
-use crate::formats::{NTriples, RdfXml, Turtle};
-use crate::input::Input;
-use sophia::api::prelude::{Graph, TripleParser};
-use sophia::api::serializer::TripleSerializer;
-use sophia::api::source::TripleSource;
-use sophia::inmem::graph::FastGraph;
-use sophia::turtle::parser::nt::NTriplesParser;
-use sophia::turtle::parser::turtle::TurtleParser;
-use sophia::turtle::serializer::nt::NtSerializer;
-use sophia::turtle::serializer::turtle::TurtleSerializer;
-use sophia::xml::parser::RdfXmlParser;
-use sophia::xml::serializer::RdfXmlSerializer;
-use std::io::{stdin, BufRead, BufReader, BufWriter, Read, Stdin, Stdout, Write};
+use std::fs::File;
+use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Read, Stdin, Stdout, Write};
 
-pub struct RdfParser {
-    pub graph: FastGraph,
+pub enum Input {
+    Stdin(BufReader<Stdin>),
+    File(BufReader<File>),
 }
 
-pub struct RdfSerializer;
+pub enum Output {
+    Stdout(BufWriter<Stdout>),
+    File(BufWriter<File>),
+}
 
-pub trait RdfIO<'a, W: Write, P: TripleParser<Input>, F: TripleSerializer> {
-    fn parse(&self, input: Input) -> Result<FastGraph, String> {
-        let mut graph = FastGraph::new();
-        match self.parser().parse(input).add_to_graph(&mut graph) {
-            Ok(_) => Ok(graph),
-            Err(_) => Err(String::from("Could not parse graph")),
+impl Output {
+    pub fn new(path: Option<String>) -> Self {
+        match path.as_deref() {
+            Some(path) => {
+                let file = File::create(path).expect("Can not create file");
+                Self::File(BufWriter::new(file))
+            }
+            None => Self::Stdout(BufWriter::new(stdout())),
         }
     }
-    fn serialize(&self, writer: W, graph: FastGraph) -> Result<(), String> {
-        let mut formatter = self.serializer(writer);
-        match formatter.serialize_graph(&graph) {
-            Ok(_) => Ok(()),
-            Err(_) => Err(String::from("Could not serialize graph")),
+}
+
+impl Write for Output {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        match self {
+            Output::Stdout(b) => b.write(buf),
+            Output::File(b) => b.write(buf),
         }
     }
-    fn parser(&self) -> P;
-    fn serializer(&self, writer: W) -> F;
-}
 
-impl RdfParser {
-    pub fn new(input: Input, format: GraphFormat) -> Result<Self, String> {
-        Ok(RdfParser {
-            graph: match format {
-                GraphFormat::NTriples => {
-                    match <NTriples as RdfIO<
-                        '_,
-                        BufWriter<Stdout>,
-                        NTriplesParser,
-                        NtSerializer<BufWriter<Stdout>>,
-                    >>::parse(&NTriples, input)
-                    {
-                        Ok(graph) => graph,
-                        Err(_) => Err(String::from("Could not load NTriples"))?,
-                    }
-                }
-                GraphFormat::Turtle => {
-                    match <Turtle as RdfIO<
-                        '_,
-                        BufWriter<Stdout>,
-                        TurtleParser,
-                        TurtleSerializer<BufWriter<Stdout>>,
-                    >>::parse(&Turtle, input)
-                    {
-                        Ok(graph) => graph,
-                        Err(_) => Err(String::from("Could not load Turtle"))?,
-                    }
-                }
-                GraphFormat::RdfXml => {
-                    match <RdfXml as RdfIO<
-                        '_,
-                        BufWriter<Stdout>,
-                        RdfXmlParser,
-                        RdfXmlSerializer<BufWriter<Stdout>>,
-                    >>::parse(&RdfXml, input)
-                    {
-                        Ok(graph) => graph,
-                        Err(_) => Err(String::from("Could not load RDF/XML"))?,
-                    }
-                }
-                _ => Err(String::from("Unsupported file format"))?,
-            },
-        })
+    fn flush(&mut self) -> std::io::Result<()> {
+        match self {
+            Output::Stdout(b) => b.flush(),
+            Output::File(b) => b.flush(),
+        }
     }
 }
 
-impl RdfSerializer {
-    pub fn serialize<W: Write>(
-        dest: W,
-        format: GraphFormat,
-        graph: FastGraph,
-    ) -> Result<(), String> {
-        match format {
-            GraphFormat::NTriples => NTriples.serialize(dest, graph),
-            GraphFormat::Turtle => Turtle.serialize(dest, graph),
-            GraphFormat::RdfXml => RdfXml.serialize(dest, graph),
-            _ => Err(String::from("Unsupported file format")),
+impl Input {
+    pub fn new(path: Option<String>) -> Self {
+        match path.as_deref() {
+            Some("-") | None => Self::Stdin(BufReader::new(stdin())),
+            Some(path) => {
+                let file = File::open(path).expect("Can not open file");
+                Self::File(BufReader::new(file))
+            }
+        }
+    }
+}
+
+impl Read for Input {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        match self {
+            Input::Stdin(b) => b.read(buf),
+            Input::File(b) => b.read(buf),
+        }
+    }
+}
+
+impl BufRead for Input {
+    fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+        match self {
+            Input::Stdin(b) => b.fill_buf(),
+            Input::File(b) => b.fill_buf(),
+        }
+    }
+
+    fn consume(&mut self, amt: usize) {
+        match self {
+            Input::Stdin(b) => b.consume(amt),
+            Input::File(b) => b.consume(amt),
         }
     }
 }
