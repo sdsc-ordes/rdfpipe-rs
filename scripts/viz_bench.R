@@ -19,19 +19,20 @@ bench <- timings %>%
     arrange(thousand_lines, tool)
 
 ggplot(bench, aes(x = thousand_lines, y = log10(mean), color = tool)) +
-    geom_line() +
     geom_ribbon(
         aes(
             y = log10(mean),
             ymin = log10(mean - stddev),
             ymax = log10(mean + stddev),
-            fill = "lightgrey"
         ),
-        alpha = .2
+        alpha = .5,
+        linewidth = 0,
+        fill = "lightgrey",
     ) +
+    geom_line() +
     xlab("Thousands of lines parsed") +
     ylab("Log10 time (seconds)") +
-    theme_bw(base_size = 18) +
+    theme_bw(base_size = 22) +
     coord_fixed(ratio = 10) +
     facet_grid(~fmt, labeller = labeller(
         fmt = c(
