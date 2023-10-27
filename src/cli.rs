@@ -1,3 +1,4 @@
+//! Command line interface for the RDF conversion tool.
 use clap;
 use clap::{Parser, ValueEnum};
 use std::fmt::Error;

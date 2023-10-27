@@ -1,3 +1,7 @@
+//! # Input and Output helpers
+//!
+//! This module contains the `Input` and `Output` helper structs.
+//! These structs simplify the handling of various sources and sinks.
 use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Read, Stdin, Stdout, Write};
 

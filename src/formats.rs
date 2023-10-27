@@ -1,5 +1,10 @@
+//! # Implementation of concrete RDF formats
+//!
+//! This module implements `RdfIO` trait for each RDF serialization format.
+use crate::cli::GraphFormat;
 use crate::converter::RdfIO;
-use crate::io::Output;
+use crate::io::{Input, Output};
+use sophia::inmem::graph::FastGraph;
 use sophia::turtle::parser::nt::NTriplesParser;
 use sophia::turtle::parser::turtle::TurtleParser;
 use sophia::turtle::serializer::nt::NtSerializer;
@@ -11,6 +16,36 @@ pub(crate) struct NTriples;
 pub(crate) struct Turtle;
 pub(crate) struct RdfXml;
 
+/// The `RdfParser` struct provides a generic interface to parse RDF graphs
+/// from different formats.
+pub struct RdfParser {
+    pub graph: FastGraph,
+}
+
+impl RdfParser {
+    pub fn new(input: Input, format: GraphFormat) -> Result<Self, String> {
+        let graph = match format {
+            GraphFormat::NTriples => NTriples.parse(input),
+            GraphFormat::Turtle => Turtle.parse(input),
+            GraphFormat::RdfXml => RdfXml.parse(input),
+        }?;
+        Ok(RdfParser { graph })
+    }
+}
+
+/// The `RdfSerializer` struct provides a generic interface to serialize
+/// RDF graphs to different formats.
+pub struct RdfSerializer;
+
+impl RdfSerializer {
+    pub fn serialize(dest: Output, format: GraphFormat, graph: FastGraph) -> Result<(), String> {
+        match format {
+            GraphFormat::NTriples => NTriples.serialize(dest, graph),
+            GraphFormat::Turtle => Turtle.serialize(dest, graph),
+            GraphFormat::RdfXml => RdfXml.serialize(dest, graph),
+        }
+    }
+}
 impl<'a> RdfIO<'a, NTriplesParser, NtSerializer<Output>> for NTriples {
     fn parser(&self) -> NTriplesParser {
         NTriplesParser {}

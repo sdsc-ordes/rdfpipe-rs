@@ -1,3 +1,39 @@
+//! # rdfpipe-rs
+//!
+//! A command-line tool for converting between RDF serialization formats.
+//!
+//! ## Usage
+//!
+//! ```bash
+//! Usage: rdfpipe-rs [OPTIONS] [INPUT_FILE]
+//!
+//! Arguments:
+//!   [INPUT_FILE]  Input file. Omit or use - for stdin. [default: -]
+//!
+//! Options:
+//!       --no-guess                       Don't guess format based on file suffix.
+//!       --no-out                         Don't output the resulting graph (useful for checking validity of input).
+//!   -i, --input-format <INPUT_FORMAT>    Input RDF serialization format [possible values: turtle, n-triples, rdf-xml]
+//!   -o, --output-format <OUTPUT_FORMAT>  Output RDF serialization format [default: turtle] [possible values: turtle, n-triples, rdf-xml]
+//!   -h, --help                           Print help
+//! ```
+//!
+//! ## Examples
+//!
+//! ```bash
+//! # Convert from Turtle to RDF/XML
+//! rdfpipe-rs -i turtle -o rdf-xml input.ttl > output.rdf
+//!
+//! # Input format can be inferred from file extension
+//! rdfpipe-rs -o xml input.ttl > output.rdf
+//!
+//! # Shortcut notations are also supported
+//! head -n 1000 input.ttl \
+//! | rdfpipe-rs -i ttl -o nt \
+//! | grep 'example.org' \
+//! > output.nt
+//! ```
+
 mod cli;
 mod converter;
 mod formats;
@@ -6,12 +42,12 @@ mod io;
 use crate::cli::{Args, GraphFormat};
 use crate::io::{Input, Output};
 use clap::Parser;
-use converter::{RdfParser, RdfSerializer};
+use formats::{RdfParser, RdfSerializer};
 use std::error::Error;
 use std::path::Path;
 
-// Infer RDF serialization format from file extension
-// If the extension is missing or unknown, None is returned.
+/// Infer RDF serialization format from file extension
+/// If the extension is missing or unknown, None is returned.
 fn format_from_path<'a>(path: &'a str) -> Option<GraphFormat> {
     let ext = Path::new(path).extension()?.to_str()?;
     GraphFormat::from_extension(ext)
