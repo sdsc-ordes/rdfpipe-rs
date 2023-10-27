@@ -5,12 +5,6 @@ use sophia::api::prelude::TripleParser;
 use sophia::api::serializer::TripleSerializer;
 use sophia::api::source::TripleSource;
 use sophia::inmem::graph::FastGraph;
-use sophia::turtle::parser::nt::NTriplesParser;
-use sophia::turtle::parser::turtle::TurtleParser;
-use sophia::turtle::serializer::nt::NtSerializer;
-use sophia::turtle::serializer::turtle::TurtleSerializer;
-use sophia::xml::parser::RdfXmlParser;
-use sophia::xml::serializer::RdfXmlSerializer;
 
 pub struct RdfParser {
     pub graph: FastGraph,
@@ -39,34 +33,12 @@ pub trait RdfIO<'a, P: TripleParser<Input>, F: TripleSerializer> {
 
 impl RdfParser {
     pub fn new(input: Input, format: GraphFormat) -> Result<Self, String> {
-        Ok(RdfParser {
-            graph: match format {
-                GraphFormat::NTriples => {
-                    match <NTriples as RdfIO<'_, NTriplesParser, NtSerializer<Output>>>::parse(
-                        &NTriples, input,
-                    ) {
-                        Ok(graph) => graph,
-                        Err(_) => Err(String::from("Could not load NTriples"))?,
-                    }
-                }
-                GraphFormat::Turtle => {
-                    match <Turtle as RdfIO<'_, TurtleParser, TurtleSerializer<Output>>>::parse(
-                        &Turtle, input,
-                    ) {
-                        Ok(graph) => graph,
-                        Err(_) => Err(String::from("Could not load Turtle"))?,
-                    }
-                }
-                GraphFormat::RdfXml => {
-                    match <RdfXml as RdfIO<'_, RdfXmlParser, RdfXmlSerializer<Output>>>::parse(
-                        &RdfXml, input,
-                    ) {
-                        Ok(graph) => graph,
-                        Err(_) => Err(String::from("Could not load RDF/XML"))?,
-                    }
-                }
-            },
-        })
+        let graph = match format {
+            GraphFormat::NTriples => NTriples.parse(input),
+            GraphFormat::Turtle => Turtle.parse(input),
+            GraphFormat::RdfXml => RdfXml.parse(input),
+        }?;
+        Ok(RdfParser { graph })
     }
 }
 
