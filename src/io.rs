@@ -79,3 +79,50 @@ impl BufRead for Input {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_input_new_stdin() {
+        let input = Input::new(None);
+        match input {
+            Input::Stdin(_) => assert!(true),
+            _ => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_input_new_file() {
+        let input = Input::new(Some("README.md".to_string()));
+        match input {
+            Input::File(_) => assert!(true),
+            _ => assert!(false),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "Can not open file")]
+    fn test_input_new_file_panic() {
+        let _input = Input::new(Some("nonexistent.txt".to_string()));
+    }
+
+    #[test]
+    fn test_output_new_stdout() {
+        let output = Output::new(None);
+        match output {
+            Output::Stdout(_) => assert!(true),
+            _ => assert!(false),
+        }
+    }
+
+    #[test]
+    fn test_output_new_file() {
+        let output = Output::new(Some("test.txt".to_string()));
+        match output {
+            Output::File(_) => assert!(true),
+            _ => assert!(false),
+        }
+    }
+}
