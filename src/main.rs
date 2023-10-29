@@ -73,7 +73,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = Input::new(args.input_file);
     let output = Output::new(None);
     let parser = RdfParser::new(input, input_format)?;
-    RdfSerializer::serialize(output, output_format, parser.graph)?;
+    if !args.no_out {
+        RdfSerializer::serialize(output, output_format, parser.graph)?;
+    }
     Ok(())
 }
 
