@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 // This lets clap automate validation of
 // RDF formats from the command line
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, PartialEq, ValueEnum)]
 pub enum GraphFormat {
     #[clap(alias = "ttl")]
     Turtle,
