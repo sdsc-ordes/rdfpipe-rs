@@ -1,34 +1,53 @@
-mod cli;
-mod utils;
+//! # rdfpipe-rs
+//!
+//! A command-line tool for converting between RDF serialization formats.
+//!
+//! ## Usage
+//!
+//! ```bash
+//! Usage: rdfpipe-rs [OPTIONS] [INPUT_FILE]
+//!
+//! Arguments:
+//!   [INPUT_FILE]  Input file. Omit or use - for stdin. [default: -]
+//!
+//! Options:
+//!       --no-guess                       Don't guess format based on file suffix.
+//!       --no-out                         Don't output the resulting graph (useful for checking validity of input).
+//!   -i, --input-format <INPUT_FORMAT>    Input RDF serialization format [possible values: turtle, n-triples, rdf-xml]
+//!   -o, --output-format <OUTPUT_FORMAT>  Output RDF serialization format [default: turtle] [possible values: turtle, n-triples, rdf-xml]
+//!   -h, --help                           Print help
+//! ```
+//!
+//! ## Examples
+//!
+//! ```bash
+//! # Convert from Turtle to RDF/XML
+//! rdfpipe-rs -i turtle -o rdf-xml input.ttl > output.rdf
+//!
+//! # Input format can be inferred from file extension
+//! rdfpipe-rs -o xml input.ttl > output.rdf
+//!
+//! # Shortcut notations are also supported
+//! head -n 1000 input.ttl \
+//! | rdfpipe-rs -i ttl -o nt \
+//! | grep 'example.org' \
+//! > output.nt
+//! ```
 
-use crate::cli::Args;
+mod cli;
+mod converter;
+mod formats;
+mod io;
+
+use crate::cli::{Args, GraphFormat};
+use crate::io::{Input, Output};
 use clap::Parser;
-use oxigraph::io::GraphFormat;
+use formats::{RdfParser, RdfSerializer};
 use std::error::Error;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
-// Gets a BufReader from a file or standard input. If input_path is None or "-",
-// return a reader from stin, if it points to a path, open from a file.
-fn get_input_buf(input_path: Option<&str>) -> io::Result<Box<dyn BufRead>> {
-    match input_path {
-        Some("-") | None => {
-            // Read from stdin
-            let stdin = io::stdin();
-            let handle = stdin.lock();
-            Ok(Box::new(handle))
-        }
-        Some(file_path) => {
-            // Attempt to open and read from file
-            let file = File::open(file_path)?;
-            let reader = BufReader::new(file);
-            Ok(Box::new(reader))
-        }
-    }
-}
-// Infer RDF serialization format from file extension
-// If the extension is missing or unknown, None is returned.
+/// Infer RDF serialization format from file extension
+/// If the extension is missing or unknown, None is returned.
 fn format_from_path<'a>(path: &'a str) -> Option<GraphFormat> {
     let ext = Path::new(path).extension()?.to_str()?;
     GraphFormat::from_extension(ext)
@@ -41,7 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Otherwise, infer format from file extension
     // unless --no-guess was provided
     let input_format = match (args.input_format, args.no_guess) {
-        (Some(format), _) => GraphFormat::from(&format),
+        (Some(format), _) => format,
         (None, true) => Err("Could not infer input format.")?,
         (None, false) => args
             .input_file
@@ -49,23 +68,56 @@ fn main() -> Result<(), Box<dyn Error>> {
             .and_then(|path| format_from_path(path))
             .ok_or_else(|| "Could not infer input format")?,
     };
-    let output_format = GraphFormat::from(&args.output_format.unwrap());
+    let output_format = args.output_format;
 
-    let input_buf = get_input_buf(args.input_file.as_deref())?;
-    let parser = utils::parse_any_rdf(input_buf, input_format)?;
-    let mut writer = utils::serialize_any_rdf(std::io::stdout(), output_format)?;
+    let input = Input::new(args.input_file);
+    let output = Output::new(None);
+    let parser = RdfParser::new(input, input_format)?;
+    if !args.no_out {
+        RdfSerializer::serialize(output, output_format, parser.graph)?;
+    }
+    Ok(())
+}
 
-    // Skip output if --no-out enabled
-    if let true  = args.no_out {
-        for triple in parser {
-            _ = triple?.as_ref();
-        }
-    } else {
-        for triple in parser {
-            writer.write(triple?.as_ref())?;
-        }
-        writer.finish()?;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_cmd::Command;
+    use std::fs::File;
+    use std::io::Write;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_format_from_path() {
+        assert_eq!(format_from_path("file.ttl"), Some(GraphFormat::Turtle));
+        assert_eq!(format_from_path("file.nt"), Some(GraphFormat::NTriples));
+        assert_eq!(format_from_path("file.rdf"), Some(GraphFormat::RdfXml));
+        assert_eq!(format_from_path("file.unknown"), None);
+        assert_eq!(format_from_path("file"), None);
     }
 
-    Ok(())
+    #[test]
+    fn test_main() -> Result<(), Box<dyn Error>> {
+        let dir = tempdir()?;
+        let input_file = dir.path().join("input.ttl");
+
+        let mut input = File::create(&input_file)?;
+        writeln!(
+            input,
+            "<http://example.org> <http://example.org/predicate> \"object\" ."
+        )?;
+
+        let mut cmd = Command::cargo_bin("rdfpipe-rs").unwrap();
+        let status = cmd
+            .arg("-i")
+            .arg("turtle")
+            .arg("-o")
+            .arg("rdf-xml")
+            .arg(&input_file)
+            .assert();
+
+        status.success();
+
+        Ok(())
+    }
 }
