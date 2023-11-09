@@ -50,3 +50,27 @@ Options:
   -h, --help                           Print help
 ```
 
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to learn about the different ways you can contribute to rdfpipe-rs.
+
+```sh
+# Install for development
+git clone https://github.com/SDSC-ORD/rdfpipe-rs
+cd rdfpipe-rs
+
+# Run unit and integration tests
+cargo test
+
+# Build documentation
+cargo doc
+
+# Build debug binary
+cargo build
+
+# Build optimized binary
+cargo build --release
+
+# Install
+cargo install --path .
+```
