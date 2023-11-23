@@ -51,13 +51,13 @@ WORKDIR /app
 # Import user files
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-COPY --from=builder /bin/sh /bin/sh
 
 # Import binary
 COPY --from=builder \
     /app/target/release/rdfpipe-rs \
     /app/rdfpipe-rs
 
+# Use unprivileged user
 USER rust:rust
 
 ENV PATH="/app/:${PATH}"
