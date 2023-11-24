@@ -70,6 +70,5 @@ COPY --from=builder \
 # Use unprivileged user
 USER rust:rust
 
-ENV PATH="/app/:${PATH}"
-ENTRYPOINT ["rdfpipe-rs"]
+ENTRYPOINT ["./rdfpipe-rs"]
 
