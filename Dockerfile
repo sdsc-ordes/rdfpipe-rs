@@ -25,7 +25,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 FROM ${RUST_BASE} AS builder
 
 # Create unprivileged user
-ENV USER=rust
+ENV USER=appuser
 ENV UID=1001
  
 RUN adduser \
@@ -68,7 +68,7 @@ COPY --from=builder \
     /app/rdfpipe-rs
 
 # Use unprivileged user
-USER rust:rust
+USER appuser:appuser
 
 ENTRYPOINT ["./rdfpipe-rs"]
 
