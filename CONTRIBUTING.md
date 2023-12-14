@@ -20,7 +20,7 @@ Pull requests are the best way to propose changes to the codebase. We actively w
 4. Ensure the test suite passes.
 5. Create the pull request!
 
-**Note:** PRs can only be merged if the [`build`](https://github.com/SDSC-ORD/rdfpipe-rs/blob/main/.github/workflows/rust.yml) GitHub action passes.
+**Note:** PRs can only be merged if the [`build`](https://github.com/sdsc-ordes/rdfpipe-rs/blob/main/.github/workflows/rust.yml) GitHub action passes.
 
 ## License
 
@@ -28,7 +28,7 @@ By contributing, you agree that your contributions will be licensed under its GP
 
 ## Important links
 
-  * [Open issues](https://github.com/SDSC-ORD/rdfpipe-rs/issues)
-  * [Open pull requests](https://github.com/SDSC-ORD/rdfpipe-rs/pulls)
-  * [Development section in the README](https://github.com/SDSC-ORD/rdfpipe-rs#development)
-  * [LICENSE](https://github.com/SDSC-ORD/rdfpipe-rs/blob/main/LICENSE)
+  * [Open issues](https://github.com/sdsc-ordes/rdfpipe-rs/issues)
+  * [Open pull requests](https://github.com/sdsc-ordes/rdfpipe-rs/pulls)
+  * [Development section in the README](https://github.com/sdsc-ordes/rdfpipe-rs#development)
+  * [LICENSE](https://github.com/sdsc-ordes/rdfpipe-rs/blob/main/LICENSE)

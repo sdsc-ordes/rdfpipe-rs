@@ -27,7 +27,7 @@ FROM ${RUST_BASE} AS builder
 # Create unprivileged user
 ENV USER=appuser
 ENV UID=1001
- 
+
 RUN adduser \
     --disabled-password \
     --gecos "" \
@@ -51,7 +51,7 @@ RUN cargo build --release
 FROM ${RUNNER_BASE} AS runner
 
 # Add annotations
-LABEL org.opencontainers.image.source=https://github.com/SDSC-ORD/rdfpipe-rs
+LABEL org.opencontainers.image.source=https://github.com/sdsc-ordes/rdfpipe-rs
 LABEL org.opencontainers.image.description="Quickly convert between RDF file formats. A rust implementation of rdfpipe based on the sophia crate."
 LABEL org.opencontainers.image.licenses=GPL-3.0-or-later
 LABEL org.opencontainers.image.version ${VERSION_BUILD}

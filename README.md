@@ -55,7 +55,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to learn about the different ways you can
 
 ```sh
 # Install for development
-git clone https://github.com/SDSC-ORD/rdfpipe-rs
+git clone https://github.com/sdsc-ordes/rdfpipe-rs
 cd rdfpipe-rs
 
 # Run unit and integration tests
