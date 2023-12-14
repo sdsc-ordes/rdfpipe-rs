@@ -11,7 +11,6 @@ rdfpipe-rs is still missing the following features:
 
 * json-ld support
 * quad support (named graphs)
-* serializing prettified turtle.
 * `--ns` option for explicit namespace binding
 
 
