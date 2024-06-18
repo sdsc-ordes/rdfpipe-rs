@@ -54,7 +54,6 @@
 mod cli;
 mod converter;
 mod formats;
-mod io;
 
 use crate::cli::{Args, GraphFormat};
 use clap::Parser;
