@@ -57,10 +57,11 @@ mod formats;
 mod io;
 
 use crate::cli::{Args, GraphFormat};
-use crate::io::{Input, Output};
 use clap::Parser;
 use formats::{RdfParser, RdfSerializer};
 use std::error::Error;
+use std::fs::File;
+use std::io::{BufRead, BufReader, BufWriter, stdout};
 use std::path::Path;
 
 /// Infer RDF serialization format from file extension
@@ -87,8 +88,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     let output_format = args.output_format;
 
-    let input = Input::new(args.input_file);
-    let output = Output::new(None);
+    let input: Box<dyn BufRead> = match args.input_file.unwrap().as_ref() {
+        "-" =>  Box::new(BufReader::new(std::io::stdin())),
+        path => Box::new(BufReader::new(File::open(path)?)),
+    };
+    let output = Box::new(BufWriter::new(stdout()));
     let parser = RdfParser::new(input, input_format)?;
     if !args.no_out {
         RdfSerializer::serialize(output, output_format, parser.graph)?;
