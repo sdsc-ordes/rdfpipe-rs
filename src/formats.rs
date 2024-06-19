@@ -18,9 +18,10 @@
 //! # Implementation of concrete RDF formats
 //!
 //! This module implements `RdfIO` trait for each RDF serialization format.
+use std::io::{BufRead, Write};
+
 use crate::cli::GraphFormat;
 use crate::converter::RdfIO;
-use crate::io::{Input, Output};
 use sophia::inmem::graph::FastGraph;
 use sophia::turtle::parser::nt::NTriplesParser;
 use sophia::turtle::parser::turtle::TurtleParser;
@@ -40,7 +41,7 @@ pub struct RdfParser {
 }
 
 impl RdfParser {
-    pub fn new(input: Input, format: GraphFormat) -> Result<Self, String> {
+    pub fn new(input: Box<dyn BufRead>, format: GraphFormat) -> Result<Self, String> {
         let graph = match format {
             GraphFormat::NTriples => NTriples.parse(input),
             GraphFormat::Turtle => Turtle.parse(input),
@@ -55,7 +56,11 @@ impl RdfParser {
 pub struct RdfSerializer;
 
 impl RdfSerializer {
-    pub fn serialize(dest: Output, format: GraphFormat, graph: FastGraph) -> Result<(), String> {
+    pub fn serialize(
+        dest: Box<dyn Write>,
+        format: GraphFormat,
+        graph: FastGraph,
+    ) -> Result<(), String> {
         match format {
             GraphFormat::NTriples => NTriples.serialize(dest, graph),
             GraphFormat::Turtle => Turtle.serialize(dest, graph),
@@ -63,32 +68,32 @@ impl RdfSerializer {
         }
     }
 }
-impl<'a> RdfIO<'a, NTriplesParser, NtSerializer<Output>> for NTriples {
+impl<'a> RdfIO<'a, NTriplesParser, NtSerializer<Box<dyn Write>>> for NTriples {
     fn parser(&self) -> NTriplesParser {
         NTriplesParser {}
     }
 
-    fn serializer(&self, writer: Output) -> NtSerializer<Output> {
+    fn serializer(&self, writer: Box<dyn Write>) -> NtSerializer<Box<dyn Write>> {
         NtSerializer::new(writer)
     }
 }
 
-impl<'a> RdfIO<'a, TurtleParser, TurtleSerializer<Output>> for Turtle {
+impl<'a> RdfIO<'a, TurtleParser, TurtleSerializer<Box<dyn Write>>> for Turtle {
     fn parser(&self) -> TurtleParser {
         TurtleParser { base: None }
     }
 
-    fn serializer(&self, writer: Output) -> TurtleSerializer<Output> {
+    fn serializer(&self, writer: Box<dyn Write>) -> TurtleSerializer<Box<dyn Write>> {
         TurtleSerializer::new(writer)
     }
 }
 
-impl<'a> RdfIO<'a, RdfXmlParser, RdfXmlSerializer<Output>> for RdfXml {
+impl<'a> RdfIO<'a, RdfXmlParser, RdfXmlSerializer<Box<dyn Write>>> for RdfXml {
     fn parser(&self) -> RdfXmlParser {
         RdfXmlParser { base: None }
     }
 
-    fn serializer(&self, writer: Output) -> RdfXmlSerializer<Output> {
+    fn serializer(&self, writer: Box<dyn Write>) -> RdfXmlSerializer<Box<dyn Write>> {
         RdfXmlSerializer::new(writer)
     }
 }
