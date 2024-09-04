@@ -19,7 +19,7 @@ rdfpipe-rs is still missing the following features:
 The package must be compiled from source using [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html):
 
 ```sh
-git clone https://github.com/cmdoret/rdfpipe-rs
+git clone https://github.com/sdsc-ordes/rdfpipe-rs
 cd rdfpipe-rs
 cargo build --release
 # executable binary located in ./target/release/rdfpipe-rs
