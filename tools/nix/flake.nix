@@ -21,7 +21,7 @@
 
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
-    nixpkgsStable.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgsStable.url = "github:nixos/nixpkgs/nixos-25.11";
     # Also see the 'stable-packages' overlay at 'overlays/default.nix'.
 
     flake-utils.url = "github:numtide/flake-utils";
@@ -57,7 +57,7 @@
         };
 
         # Set the rust toolchain from the `rust-toolchain.toml`.
-        rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ../rust-toolchain.toml;
+        rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ../../rust-toolchain.toml;
 
         # Things needed only at compile-time.
         nativeBuildInputsBasic = with pkgs; [
